@@ -6,15 +6,18 @@
 			<fieldset>
 				<legend>Elegir otro RSS:</legend>
 				<section class="newspaper">
-						<span>
-							<input type="radio" id="DiarioJaen" value="https://www.diariojaen.es/rss/jaen.xml" v-model="feedUrl"><label for="DiarioJaen">Diario Jaén</label>
-						</span>
 					<span>
-							<input type="radio" id="IdealJaen" value="https://www.ideal.es/rss/2.0/?section=jaen/jaen" v-model="feedUrl"><label for="IdealJaen">Ideal Jaén</label>
-						</span>
+						<input type="radio" id="DiarioJaen" value="https://www.diariojaen.es/rss/jaen.xml" v-model="feedUrl"><label for="DiarioJaen">Diario Jaén</label>
+					</span>
 					<span>
-							<input type="radio" id="20MinutosJaen" value="https://www.20minutos.es/rss/jaen/" v-model="feedUrl"><label for="20MinutosJaen">20 Minutos Jaén</label>
-						</span>
+						<input type="radio" id="IdealJaen" value="https://www.ideal.es/rss/2.0/?section=jaen/jaen" v-model="feedUrl"><label for="IdealJaen">Ideal Jaén</label>
+					</span>
+					<span>
+						<input type="radio" id="20MinutosJaen" value="https://www.20minutos.es/rss/jaen/" v-model="feedUrl"><label for="20MinutosJaen">20 Minutos Jaén</label>
+					</span>
+				</section>
+				<section>
+					<label>Leer RSS por su URL<input class="input" type="url" v-model="feedUrl"></label>
 				</section>
 			</fieldset>
 		</form>
@@ -156,6 +159,12 @@
 				display: flex;
 				justify-content: space-around;
 				align-items: center;
+				margin-bottom: 20px;
+			}
+
+			.input {
+				width: 90%;
+				padding: 10px;
 			}
 		}
 
