@@ -34,7 +34,7 @@
 					<img v-if="article.enclosure && article.enclosure.url && article.enclosure.width && article.enclosure.height"
 					     :src="article.enclosure.url" :width="article.enclosure.width" :height="article.enclosure.height" alt="imagen del artículo">
 					<img v-else-if="article.imagen"
-					     :src="article.imagen" alt="imagen del artículo">
+					     :src="article.imagen" width="320px" height="180px" alt="imagen del artículo">
 					<img v-else src="https://via.placeholder.com/320x180?text=No hay imagen" width="320px" height="180px" alt="placeholder">
 					<div class="content">
 						<details>
@@ -55,6 +55,7 @@
 <script>
 	import RSSParser from "rss-parser";
 
+	const CORS_PROXY = "https://cors-anywhere.herokuapp.com/"
 	export default {
 		name: 'home',
 		components: {
@@ -103,10 +104,12 @@
 				this.loading = true;
 				this.feed = {};
 				try {
-					const data = await fetch(this.feedUrl);
+					const data = await fetch(CORS_PROXY + this.feedUrl);
 					if (data.ok) {
 						const text = await data.text();
-						const parser = new RSSParser();
+						const parser = new RSSParser({customFields: {
+								item: ['imagen']
+						}});
 						parser.parseString(text, (err, parsed) => {
 							this.loading = false;
 							if (err) {
