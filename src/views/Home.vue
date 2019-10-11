@@ -1,10 +1,26 @@
 <template>
 	<div class="home">
+		<h1>JaénRSS</h1>
+		<h4>A RSS reader by <a href="mailto:mail.danielml@gmail.com">Daniel Moya</a></h4>
+		<form>
+			<fieldset>
+				<legend>Elegir otro RSS:</legend>
+				<section class="newspaper">
+						<span>
+							<input type="radio" id="DiarioJaen" value="https://www.diariojaen.es/rss/jaen.xml" v-model="feedUrl"><label for="DiarioJaen">Diario Jaén</label>
+						</span>
+					<span>
+							<input type="radio" id="IdealJaen" value="https://www.ideal.es/rss/2.0/?section=jaen/jaen" v-model="feedUrl"><label for="IdealJaen">Ideal Jaén</label>
+						</span>
+					<span>
+							<input type="radio" id="20MinutosJaen" value="https://www.20minutos.es/rss/jaen/" v-model="feedUrl"><label for="20MinutosJaen">20 Minutos Jaén</label>
+						</span>
+				</section>
+			</fieldset>
+		</form>
 		<div v-if="error" class="error">{{error}}</div>
 		<div v-else class="feed">
-			<h1 v-if="name">{{name}}</h1>
-			<h1 v-else>{{feed.title}}</h1>
-			<h4>A RSS reader by <a href="mailto:mail.danielml@gmail.com">Daniel Moya</a></h4>
+			<h2>{{ feed.title }}</h2>
 			<div v-if="loading" class="spinner">
 				<div class="bounce1"></div>
 				<div class="bounce2"></div>
@@ -14,15 +30,15 @@
 				<article v-for="(article, index) of getArticles()" class="article">
 					<img v-if="article.enclosure && article.enclosure.url && article.enclosure.width && article.enclosure.height"
 					     :src="article.enclosure.url" :width="article.enclosure.width" :height="article.enclosure.height" alt="imagen del artículo">
-					<img v-else src="https://via.placeholder.com/320x180?text=No hay imagen" width="320px" height="180px">
+					<img v-else-if="article.imagen"
+					     :src="article.imagen" alt="imagen del artículo">
+					<img v-else src="https://via.placeholder.com/320x180?text=No hay imagen" width="320px" height="180px" alt="placeholder">
 					<div class="content">
-						<header>
-							<span>{{ article.pubDate }} - <a :href="article.link">Enlace</a></span>
-							<h1>{{ article.title }}</h1>
-						</header>
 						<details>
 							<summary>
-								{{ getPreview(article.contentSnippet) }}
+								<span class="date">({{ index }}) {{ article.pubDate }} - <a :href="article.link" target="_blank">Enlace</a></span>
+								<h1>{{ article.title }}</h1>
+								<span class="summary">{{ getPreview(article.contentSnippet) }}</span>
 							</summary>
 							<p v-html="parseContent(article.content)"></p>
 						</details>
@@ -36,8 +52,6 @@
 <script>
 	import RSSParser from "rss-parser";
 
-	const PREVIEW_CHARACTERS = 140;
-
 	export default {
 		name: 'home',
 		components: {
@@ -45,7 +59,6 @@
 		data() {
 			return {
 				feedUrl: "https://www.diariojaen.es/rss/jaen.xml",
-				name: "JaénRSS",
 				limit: 20,
 				loadMore: true,
 				loading: true,
@@ -118,16 +131,10 @@
 				}
 			},
 			parseContent(content) {
-				let noPicture = content.substr(content.search("\">")+9);
-				let index = noPicture.indexOf(".", PREVIEW_CHARACTERS)+1;
-				return (index)  ? noPicture.substr(index)
-								: noPicture.substr(noPicture.indexOf(".", 0)+1);
+				return content.substr(content.search("\">") + 9);
 			},
 			getPreview(content) {
-				let index = content.indexOf(".", PREVIEW_CHARACTERS)+1;
-				if(index > 240)
-				return (index)  ? content.substr(0, index)
-								: content.substr(0, content.indexOf(".", 0)+1);
+				return content.substr(0, 300);
 			},
 			increaseLimit(loadMore = 5) {
 				this.limit += loadMore;
@@ -139,106 +146,144 @@
 <style lang="scss">
 	.home {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 
-		.articles-container {
-			max-width: 1000px;
-
-			.article {
-				text-align: left;
+		form {
+			width: 80%;
+			.newspaper {
 				display: flex;
-				align-items: flex-start;
-				border-bottom: solid 1px gray;
-				padding: 20px;
+				justify-content: space-around;
+				align-items: center;
+			}
+		}
 
-				img {
-					margin-right: 20px;
-					min-width: 320px;
-					min-height: 180px;
-				}
+		.feed {
 
-				.content {
+			.articles-container {
+				max-width: 1000px;
+
+				.article {
+					text-align: left;
 					display: flex;
-					flex-direction: column;
+					align-items: flex-start;
+					border-bottom: solid 1px gray;
+					padding: 20px;
 
-					header {
+					@media (max-width: 800px) {
+						flex-direction: column;
+					}
+
+					img {
+						margin-right: 20px;
+						min-width: 320px;
+						min-height: 180px;
+
+						@media (max-width: 800px) {
+							min-width: 100%;
+							min-height: auto;
+							margin-bottom: 10px;
+						}
+					}
+
+					.content {
 						display: flex;
 						flex-direction: column;
 
-						h1 {
-							padding-bottom: 10px;
-							margin: 0;
+						summary {
+							display: flex;
+							flex-direction: column;
+							outline: none;
+							text-align: justify;
+							cursor: pointer;
+
+							h1 {
+								padding-bottom: 10px;
+								margin: 0;
+							}
+
+							.date {
+								font-size: 12px;
+								font-style: italic;
+							}
+
+							.summary {
+								font-size: 14px;
+								font-style: italic;
+							}
+
+							&::-webkit-details-marker {
+								display: none;
+							}
+
+							&[open] {
+								.summary {
+									display: none;
+								}
+							}
 						}
 
-						span {
-							font-size: 12px;
-							font-style: italic;
-						}
-					}
 
-					summary {
-						outline: none;
-						text-align: justify;
 					}
 				}
 			}
-		}
 
-		/* CSS Spinner */
-		.spinner {
-			margin: 40px auto 0;
-			width: 150px;
-			text-align: center;
-		}
-
-		.error {
-			color: red;
-		}
-
-		.spinner > div {
-			width: 18px;
-			height: 18px;
-			/* background-color: #ff641b; */
-			background-color: #42b983;
-			background-color: #777;
-			margin-right: 10px;
-			border-radius: 100%;
-			display: inline-block;
-			-webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
-			animation: sk-bouncedelay 1.4s infinite ease-in-out both;
-		}
-
-		.spinner .bounce1 {
-			-webkit-animation-delay: -0.32s;
-			animation-delay: -0.32s;
-		}
-
-		.spinner .bounce2 {
-			-webkit-animation-delay: -0.16s;
-			animation-delay: -0.16s;
-		}
-
-		@-webkit-keyframes sk-bouncedelay {
-			0%,
-			80%,
-			100% {
-				-webkit-transform: scale(0);
+			/* CSS Spinner */
+			.spinner {
+				margin: 40px auto 0;
+				width: 150px;
+				text-align: center;
 			}
-			40% {
-				-webkit-transform: scale(1);
+
+			.error {
+				color: red;
 			}
-		}
-		@keyframes sk-bouncedelay {
-			0%,
-			80%,
-			100% {
-				-webkit-transform: scale(0);
-				transform: scale(0);
+
+			.spinner > div {
+				width: 18px;
+				height: 18px;
+				/* background-color: #ff641b; */
+				background-color: #42b983;
+				background-color: #777;
+				margin-right: 10px;
+				border-radius: 100%;
+				display: inline-block;
+				-webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+				animation: sk-bouncedelay 1.4s infinite ease-in-out both;
 			}
-			40% {
-				-webkit-transform: scale(1);
-				transform: scale(1);
+
+			.spinner .bounce1 {
+				-webkit-animation-delay: -0.32s;
+				animation-delay: -0.32s;
+			}
+
+			.spinner .bounce2 {
+				-webkit-animation-delay: -0.16s;
+				animation-delay: -0.16s;
+			}
+
+			@-webkit-keyframes sk-bouncedelay {
+				0%,
+				80%,
+				100% {
+					-webkit-transform: scale(0);
+				}
+				40% {
+					-webkit-transform: scale(1);
+				}
+			}
+			@keyframes sk-bouncedelay {
+				0%,
+				80%,
+				100% {
+					-webkit-transform: scale(0);
+					transform: scale(0);
+				}
+				40% {
+					-webkit-transform: scale(1);
+					transform: scale(1);
+				}
 			}
 		}
 	}
