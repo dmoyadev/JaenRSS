@@ -1,52 +1,51 @@
 <template>
 	<div class="home">
-		<h1>JaénRSS</h1>
+		<img class="logo" src="../assets/logo.svg" alt="logo de JaénRSS">
 		<h4>A RSS reader by <a href="mailto:mail.danielml@gmail.com">Daniel Moya</a></h4>
-		<form>
-			<fieldset>
-				<legend>Elegir otro RSS:</legend>
-				<section class="newspaper">
-					<span>
-						<input type="radio" id="DiarioJaen" value="https://www.diariojaen.es/rss/jaen.xml" v-model="feedUrl"><label for="DiarioJaen">Diario Jaén</label>
-					</span>
-					<span>
-						<input type="radio" id="IdealJaen" value="https://www.ideal.es/rss/2.0/?section=jaen/jaen" v-model="feedUrl"><label for="IdealJaen">Ideal Jaén</label>
-					</span>
-					<span>
-						<input type="radio" id="20MinutosJaen" value="https://www.20minutos.es/rss/jaen/" v-model="feedUrl"><label for="20MinutosJaen">20 Minutos Jaén</label>
-					</span>
-				</section>
-				<section>
-					<label>Leer RSS por su URL<input class="input" type="url" v-model="feedUrl"></label>
-				</section>
-			</fieldset>
-		</form>
+		<nav>
+			<form>
+				<fieldset>
+					<legend class="dynamic-text">Elegir otro RSS:</legend>
+					<section class="newspaper">
+						<span>
+							<input type="radio" id="DiarioJaen" value="https://www.diariojaen.es/rss/jaen.xml" v-model="feedUrl"><label for="DiarioJaen">Diario Jaén</label>
+						</span>
+						<span>
+							<input type="radio" id="IdealJaen" value="https://www.ideal.es/rss/2.0/?section=jaen/jaen" v-model="feedUrl"><label for="IdealJaen">Ideal Jaén</label>
+						</span>
+						<span>
+							<input type="radio" id="20MinutosJaen" value="https://www.20minutos.es/rss/jaen/" v-model="feedUrl"><label for="20MinutosJaen">20 Minutos Jaén</label>
+						</span>
+					</section>
+					<section>
+						<label class="dynamic-text">Leer RSS por su URL:<input class="input" type="url" v-model="feedUrl"></label>
+					</section>
+				</fieldset>
+			</form>
+			<form>
+				<fieldset>
+					<legend class="dynamic-text">Cambiar estilo:</legend>
+					<section class="newspaper">
+						<input class="text-button" type="button" value="- Disminuir tamaño de letra" @click="changeFontSize(-1)">
+						<input class="text-button" type="button" value="+ Aumentar tamaño de letra" @click="changeFontSize(1)">
+					</section>
+					<section>
+						<input class="text-button" type="button" value="Establecer tamaño por defecto" @click="changeFontSize(0)">
+					</section>
+				</fieldset>
+			</form>
+		</nav>
 		<div v-if="error" class="error">{{error}}</div>
 		<div v-else class="feed">
-			<h2>{{ feed.title }}</h2>
+			<h2 class="dynamic-text">{{ feed.title }}</h2>
 			<div v-if="loading" class="spinner">
 				<div class="bounce1"></div>
 				<div class="bounce2"></div>
 				<div class="bounce3"></div>
 			</div>
 			<div class="articles-container">
-				<article v-for="(article, index) of getArticles()" class="article">
-					<img v-if="article.enclosure && article.enclosure.url && article.enclosure.width && article.enclosure.height"
-					     :src="article.enclosure.url" :width="article.enclosure.width" :height="article.enclosure.height" alt="imagen del artículo">
-					<img v-else-if="article.imagen"
-					     :src="article.imagen" width="320px" height="180px" alt="imagen del artículo">
-					<img v-else src="https://via.placeholder.com/320x180?text=No hay imagen" width="320px" height="180px" alt="placeholder">
-					<div class="content">
-						<details>
-							<summary>
-								<span class="date">({{ index }}) {{ article.pubDate }} - <a :href="article.link" target="_blank">Enlace</a></span>
-								<h1>{{ article.title }}</h1>
-								<span class="summary">{{ getPreview(article.contentSnippet) }}</span>
-							</summary>
-							<p v-html="parseContent(article.content)"></p>
-						</details>
-					</div>
-				</article>
+				<Article v-for="(article, index) of getArticles()"
+				         :article="article" :index="index"></Article>
 			</div>
 		</div>
 	</div>
@@ -54,16 +53,19 @@
 
 <script>
 	import RSSParser from "rss-parser";
+	import Article from "@/components/Article";
 
 	const CORS_PROXY = "https://cors-anywhere.herokuapp.com/"
 	export default {
 		name: 'home',
 		components: {
+			Article
 		},
 		data() {
 			return {
 				feedUrl: "https://www.diariojaen.es/rss/jaen.xml",
 				limit: 20,
+				fontSizeDeviation: 0,
 				loadMore: true,
 				loading: true,
 				error: "",
@@ -107,9 +109,11 @@
 					const data = await fetch(CORS_PROXY + this.feedUrl);
 					if (data.ok) {
 						const text = await data.text();
-						const parser = new RSSParser({customFields: {
+						const parser = new RSSParser({
+							customFields: {
 								item: ['imagen']
-						}});
+							}
+						});
 						parser.parseString(text, (err, parsed) => {
 							this.loading = false;
 							if (err) {
@@ -136,15 +140,23 @@
 					return this.feed.items.slice(0, this.limit);
 				}
 			},
-			parseContent(content) {
-				return content.substr(content.search("\">") + 9);
-			},
-			getPreview(content) {
-				return content.substr(0, 300);
-			},
 			increaseLimit(loadMore = 5) {
 				this.limit += loadMore;
 			},
+			changeFontSize(delta) {
+				let txt = document.getElementsByClassName('dynamic-text');
+				for (let element in txt) {
+					if (typeof HTMLElement === "object" ? txt[element] instanceof HTMLElement : //DOM2
+						txt[element] && typeof txt[element] === "object" && txt[element] !== null && txt[element].nodeType === 1 && typeof txt[element].nodeName === "string") {
+						let style = window.getComputedStyle(txt[element], null).getPropertyValue('font-size');
+						let currentSize = parseFloat(style);
+						txt[element].style.fontSize =
+							(delta !== 0)   ? (currentSize + delta) + 'px'
+											: (currentSize - this.fontSizeDeviation) + 'px';
+					}
+				}
+				this.fontSizeDeviation = (delta !== 0) ? this.fontSizeDeviation + delta : 0
+			}
 		}
 	}
 </script>
@@ -156,89 +168,84 @@
 		align-items: center;
 		justify-content: center;
 
-		form {
-			width: 80%;
-			.newspaper {
-				display: flex;
-				justify-content: space-around;
-				align-items: center;
-				margin-bottom: 20px;
-			}
+		.logo {
+			margin-left: 40px;
+			margin-top: 20px;
+			width: 320px;
+			height: auto;
+		}
 
-			.input {
-				width: 90%;
-				padding: 10px;
+		h4 {
+			color: #FF5D00;
+			padding:20px;
+		}
+
+		h5 {
+			padding: 20px;
+		}
+
+		nav {
+			width: 80%;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+
+			form {
+				width: 100%;
+				padding: 0 50px 70px;
+
+				fieldset {
+					padding: 20px;
+					border: 2px solid #FF5D00;
+					box-shadow: 0 18px 18px rgba(0, 0, 0, 0.25), 0 5px 7px rgba(0, 0, 0, 0.22);
+
+					legend {
+						padding: 10px;
+					}
+
+					.newspaper {
+						display: flex;
+						justify-content: space-around;
+						align-items: center;
+						margin-bottom: 20px;
+
+						span {
+							display: flex;
+							justify-content: center;
+							align-items: center;
+
+							input {
+								margin-right: 10px;
+							}
+
+							label {
+								margin-top: 2px;
+							}
+						}
+					}
+
+					.text-button {
+						padding: 10px;
+						border: 1px solid gray;
+						outline: none;
+						margin-right: 10px;
+					}
+				}
+
+				.input {
+					width: 90%;
+					padding: 10px;
+				}
 			}
 		}
 
 		.feed {
 
 			.articles-container {
-				max-width: 1000px;
-
-				.article {
-					text-align: left;
-					display: flex;
-					align-items: flex-start;
-					border-bottom: solid 1px gray;
-					padding: 20px;
-
-					@media (max-width: 800px) {
-						flex-direction: column;
-					}
-
-					img {
-						margin-right: 20px;
-						min-width: 320px;
-						min-height: 180px;
-
-						@media (max-width: 800px) {
-							min-width: 100%;
-							min-height: auto;
-							margin-bottom: 10px;
-						}
-					}
-
-					.content {
-						display: flex;
-						flex-direction: column;
-
-						summary {
-							display: flex;
-							flex-direction: column;
-							outline: none;
-							text-align: justify;
-							cursor: pointer;
-
-							h1 {
-								padding-bottom: 10px;
-								margin: 0;
-							}
-
-							.date {
-								font-size: 12px;
-								font-style: italic;
-							}
-
-							.summary {
-								font-size: 14px;
-								font-style: italic;
-							}
-
-							&::-webkit-details-marker {
-								display: none;
-							}
-
-							&[open] {
-								.summary {
-									display: none;
-								}
-							}
-						}
-
-
-					}
-				}
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				align-items: flex-start;
 			}
 
 			/* CSS Spinner */
