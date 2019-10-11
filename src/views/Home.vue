@@ -190,9 +190,17 @@
 			justify-content: space-between;
 			align-items: center;
 
+			@media (max-width: 800px) {
+				flex-direction: column;
+			}
+
 			form {
 				width: 100%;
 				padding: 0 50px 70px;
+
+				@media (max-width: 800px) {
+					padding-bottom: 30px;
+				}
 
 				fieldset {
 					padding: 20px;
