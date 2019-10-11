@@ -4,6 +4,7 @@
 		<div v-else class="feed">
 			<h1 v-if="name">{{name}}</h1>
 			<h1 v-else>{{feed.title}}</h1>
+			<h4>A RSS reader by <a href="mailto:mail.danielml@gmail.com">Daniel Moya</a></h4>
 			<div v-if="loading" class="spinner">
 				<div class="bounce1"></div>
 				<div class="bounce2"></div>
@@ -16,8 +17,8 @@
 					<img v-else src="https://via.placeholder.com/320x180?text=No hay imagen" width="320px" height="180px">
 					<div class="content">
 						<header>
-							<h1>{{ article.title }}</h1>
 							<span>{{ article.pubDate }} - <a :href="article.link">Enlace</a></span>
+							<h1>{{ article.title }}</h1>
 						</header>
 						<details>
 							<summary>
@@ -35,6 +36,7 @@
 <script>
 	import RSSParser from "rss-parser";
 
+	const PREVIEW_CHARACTERS = 140;
 
 	export default {
 		name: 'home',
@@ -117,12 +119,13 @@
 			},
 			parseContent(content) {
 				let noPicture = content.substr(content.search("\">")+9);
-				let index = noPicture.indexOf(".", 900)+1;
+				let index = noPicture.indexOf(".", PREVIEW_CHARACTERS)+1;
 				return (index)  ? noPicture.substr(index)
 								: noPicture.substr(noPicture.indexOf(".", 0)+1);
 			},
 			getPreview(content) {
-				let index = content.indexOf(".", 900)+1;
+				let index = content.indexOf(".", PREVIEW_CHARACTERS)+1;
+				if(index > 240)
 				return (index)  ? content.substr(0, index)
 								: content.substr(0, content.indexOf(".", 0)+1);
 			},
@@ -134,94 +137,109 @@
 </script>
 
 <style lang="scss">
-	.articles-container {
-		.article {
-			text-align: left;
+	.home {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 
-			display: flex;
+		.articles-container {
+			max-width: 1000px;
 
-			img {
-				padding: 20px;
-				min-width: 320px;
-				min-height: 180px;
-			}
-
-			.content {
+			.article {
+				text-align: left;
 				display: flex;
-				flex-direction: column;
+				align-items: flex-start;
+				border-bottom: solid 1px gray;
+				padding: 20px;
 
-				header {
+				img {
+					margin-right: 20px;
+					min-width: 320px;
+					min-height: 180px;
+				}
+
+				.content {
 					display: flex;
 					flex-direction: column;
 
-					h1 {
-						padding-top: 20px;
-						margin: 0;
+					header {
+						display: flex;
+						flex-direction: column;
+
+						h1 {
+							padding-bottom: 10px;
+							margin: 0;
+						}
+
+						span {
+							font-size: 12px;
+							font-style: italic;
+						}
 					}
 
-					span {
-						margin-bottom: 10px;
-						font-size: 8px;
-						font-style: italic;
+					summary {
+						outline: none;
+						text-align: justify;
 					}
-				}
-
-				summary {
-					outline: none;
 				}
 			}
 		}
-	}
 
-	/* CSS Spinner */
-	.spinner {
-		margin: 40px auto 0;
-		width: 150px;
-		text-align: center;
-	}
-	.error {
-		color: red;
-	}
-	.spinner > div {
-		width: 18px;
-		height: 18px;
-		/* background-color: #ff641b; */
-		background-color: #42b983;
-		background-color: #777;
-		margin-right: 10px;
-		border-radius: 100%;
-		display: inline-block;
-		-webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
-		animation: sk-bouncedelay 1.4s infinite ease-in-out both;
-	}
-	.spinner .bounce1 {
-		-webkit-animation-delay: -0.32s;
-		animation-delay: -0.32s;
-	}
-	.spinner .bounce2 {
-		-webkit-animation-delay: -0.16s;
-		animation-delay: -0.16s;
-	}
-	@-webkit-keyframes sk-bouncedelay {
-		0%,
-		80%,
-		100% {
-			-webkit-transform: scale(0);
+		/* CSS Spinner */
+		.spinner {
+			margin: 40px auto 0;
+			width: 150px;
+			text-align: center;
 		}
-		40% {
-			-webkit-transform: scale(1);
+
+		.error {
+			color: red;
 		}
-	}
-	@keyframes sk-bouncedelay {
-		0%,
-		80%,
-		100% {
-			-webkit-transform: scale(0);
-			transform: scale(0);
+
+		.spinner > div {
+			width: 18px;
+			height: 18px;
+			/* background-color: #ff641b; */
+			background-color: #42b983;
+			background-color: #777;
+			margin-right: 10px;
+			border-radius: 100%;
+			display: inline-block;
+			-webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+			animation: sk-bouncedelay 1.4s infinite ease-in-out both;
 		}
-		40% {
-			-webkit-transform: scale(1);
-			transform: scale(1);
+
+		.spinner .bounce1 {
+			-webkit-animation-delay: -0.32s;
+			animation-delay: -0.32s;
+		}
+
+		.spinner .bounce2 {
+			-webkit-animation-delay: -0.16s;
+			animation-delay: -0.16s;
+		}
+
+		@-webkit-keyframes sk-bouncedelay {
+			0%,
+			80%,
+			100% {
+				-webkit-transform: scale(0);
+			}
+			40% {
+				-webkit-transform: scale(1);
+			}
+		}
+		@keyframes sk-bouncedelay {
+			0%,
+			80%,
+			100% {
+				-webkit-transform: scale(0);
+				transform: scale(0);
+			}
+			40% {
+				-webkit-transform: scale(1);
+				transform: scale(1);
+			}
 		}
 	}
 </style>
