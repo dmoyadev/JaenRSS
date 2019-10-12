@@ -16,6 +16,9 @@
 						<span>
 							<input type="radio" id="20MinutosJaen" value="https://www.20minutos.es/rss/jaen/" v-model="feedUrl"><label for="20MinutosJaen">20 Minutos Jaén</label>
 						</span>
+						<span>
+							<input type="radio" id="DiarioDigitalUJA" value="https://diariodigital.ujaen.es/rss.xml" v-model="feedUrl"><label for="DiarioDigitalUJA">Diario Digital UJA</label>
+						</span>
 					</section>
 					<section>
 						<label class="dynamic-text">Leer RSS por su URL:<input class="input" type="url" v-model="feedUrl"></label>
