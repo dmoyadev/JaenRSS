@@ -1,5 +1,10 @@
 # jaenrss
 
+<p align="center">
+  <img src="/Screenshot.png?raw=true" width=45%" alt="Screenshot of the main page">
+  <img src="/Screenshot%202.png?raw=true" width="45%" alt="Screenshot of an open news">
+</p>
+
 ## Project setup
 ```
 npm install
